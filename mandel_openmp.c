@@ -17,8 +17,10 @@
 
 // #define XRES 78
 // #define YRES 64
-#define XRES 310
-#define YRES 240
+// #define XRES 310
+// #define YRES 240
+#define XRES 1024
+#define YRES 1024
 #define MAX_ITER 99
 
 #define XMIN -3.0
@@ -42,7 +44,7 @@ int main(int argc, char **argv) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-	printf("starting %d/%d\n", world_rank, world_size);
+	// printf("starting %d/%d\n", world_rank, world_size);
 	int start_index = (YRES / world_size) * world_rank;
 	int end_index = min(start_index + (YRES / world_size), YRES);
 	int size = end_index - start_index;
@@ -70,14 +72,16 @@ int main(int argc, char **argv) {
 	// MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Gather(counts, size * XRES, MPI_INT, all_counts, size * XRES, MPI_INT, 0, MPI_COMM_WORLD); 
 	MPI_Finalize();
-
+	int sum = 0;
 	if (world_rank == 0) {
 		for (int i = 0; i < YRES; i++) {
 			for (int j = 0; j < XRES; j++) {
 				int idx = i * XRES + j;
-				printf("%2d", all_counts[idx]);
+				sum += all_counts[idx];
+				// printf("%2d", all_counts[idx]);
 			}
-			printf("\n");
+			// printf("\n");
 		}
+		printf("sum: %d\n", sum);
 	}
 }
