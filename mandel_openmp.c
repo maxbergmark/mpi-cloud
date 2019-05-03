@@ -15,8 +15,10 @@
 		 __typeof__ (b) _b = (b); \
 		_a < _b ? _a : _b; })
 
-#define XRES 78
-#define YRES 64
+// #define XRES 78
+// #define YRES 64
+#define XRES 310
+#define YRES 240
 #define MAX_ITER 99
 
 #define XMIN -3.0
