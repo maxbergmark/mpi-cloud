@@ -2,7 +2,7 @@
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <complex.h>
+#include <complex>
 #include <math.h>
 
 #define max(a,b) \
@@ -24,14 +24,10 @@
 #define YMIN -1.5
 #define YMAX  1.5
 
-double c_abs(double complex c) {
-	return sqrt(creal(c)*creal(c) + cimag(c)*cimag(c));
-}
-
-int get_count(double complex c) {
-	double complex z = 0 + 0 * I;
+int get_count(std::complex<double> c) {
+	std::complex<double> z = 0 + 0i;
 	int count = 0;
-	while (c_abs(z) < 3 && count < MAX_ITER) {
+	while (abs(z) < 3 && count < MAX_ITER) {
 		z = z*z + c;
 		count++;
 	}
@@ -58,7 +54,7 @@ int main(int argc, char **argv) {
 		for (int x = 0; x < XRES; x++) {
 			double real = (XMIN + (XMAX - XMIN) * (x / (double)XRES));
 			double imag = (YMIN + (YMAX - YMIN) * (y / (double)YRES));
-			double complex z1 = real + imag * I;
+			std::complex<double> z1 = real + imag * 1i;
 			int idx = y0 * XRES + x;
 			counts[idx] = get_count(z1);
 		}
