@@ -5,6 +5,7 @@
 #include <complex>
 #include <math.h>
 #include <ctime>
+#include <cstdlib>
 
 #define max(a,b) \
 	({ __typeof__ (a) _a = (a); \
@@ -20,8 +21,8 @@
 // #define YRES 64
 // #define XRES 310
 // #define YRES 240
-#define XRES 4096
-#define YRES 4096
+// #define XRES 4096
+// #define YRES 4096
 #define MAX_ITER 99
 
 #define XMIN -3.0
@@ -40,6 +41,9 @@ int get_count(std::complex<double> c) {
 }
 
 int main(int argc, char **argv) {
+
+	int XRES = atoi(argv[1]);
+	int YRES = XRES;
 
 	clock_t t0 = clock();
 
