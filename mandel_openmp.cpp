@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 	int *all_counts;
 	clock_t t2 = clock();
 
-	#pragma omp parallel for
+	#pragma omp parallel for schedule(dynamic,64)
 	for (int y0 = 0; y0 < size; y0++) {
 		int y = y0 + start_index;
 		for (int x = 0; x < XRES; x++) {
