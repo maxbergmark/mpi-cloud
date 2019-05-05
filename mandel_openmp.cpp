@@ -34,9 +34,9 @@ double get_wall_time(){
 	return (double)time.tv_sec + (double)time.tv_usec * .000001;
 }
 
-int get_count(std::complex<double> c) {
+char get_count(std::complex<double> c) {
 	std::complex<double> z = 0 + 0i;
-	int count = 0;
+	char count = 0;
 	while (abs(z) < 3 && count < MAX_ITER) {
 		z = z*z + c;
 		count++;
@@ -62,9 +62,9 @@ int main(int argc, char **argv) {
 	int start_index = (YRES / world_size) * world_rank;
 	int end_index = min(start_index + (YRES / world_size), YRES);
 	int size = end_index - start_index;
-	int *counts = new int[size*XRES];
+	char *counts = new char[size*XRES];
 	// int *counts = malloc((size * XRES)*sizeof(int));
-	int *all_counts;
+	char *all_counts;
 	clock_t t2 = clock(); double w2 = get_wall_time();
 
 	#pragma omp parallel for schedule(dynamic,64)
@@ -83,14 +83,14 @@ int main(int argc, char **argv) {
 
 	if (world_rank == 0) {
 		// all_counts = malloc(XRES * YRES * sizeof(int));
-		all_counts = new int[XRES * YRES];
+		all_counts = new char[XRES * YRES];
 	}
 	clock_t t4 = clock(); double w4 = get_wall_time();
 
 
 	printf("At end: %d, %d\n", world_rank, size);
 	// MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Gather(counts, size * XRES, MPI_INT, all_counts, size * XRES, MPI_INT, 0, MPI_COMM_WORLD); 
+	MPI_Gather(counts, size * XRES, MPI_CHAR, all_counts, size * XRES, MPI_CHAR, 0, MPI_COMM_WORLD); 
 	MPI_Finalize();
 
 	clock_t t5 = clock(); double w5 = get_wall_time();
