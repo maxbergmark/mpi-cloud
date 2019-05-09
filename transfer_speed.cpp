@@ -4,6 +4,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <sys/time.h>
+#include <unistd.h>
 
 double get_wall_time(){
 	struct timeval time;
@@ -66,7 +67,11 @@ int main(int argc, char **argv) {
 	}
 	avg_time /= trials;
 	double avg_speed = sizeof(int) * size / avg_time / 1024 / 1024;
-	printf("average: %.2fMB/s (%8.5fs)\n", avg_speed, avg_time);		
+
+	char hostname[1024];
+    gethostname(hostname, 1024);
+	printf("%s (%2d) avg: %.2fMB/s (%8.5fs)\n", 
+		hostname, world_rank, avg_speed, avg_time);		
 	double tot_speed;
 	MPI_Reduce(&avg_speed, &tot_speed, 1, MPI_DOUBLE,
 		MPI_SUM, 0, MPI_COMM_WORLD);
