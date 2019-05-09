@@ -17,22 +17,24 @@ double get_wall_time(){
 
 int main(int argc, char **argv) {
 
-	if (argc < 2) {
-		printf("Usage: %s <size> <trials>", argv[0]);
+	MPI_Init(NULL, NULL);
+	int world_rank, world_size;
+	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+	if (argc != 3) {
+		if (world_rank == 0) {
+			printf("Usage: %s <size> <trials>\n", argv[0]);
+		}
 		exit(1);
 	}
 	int size = atoi(argv[1]);
 	int trials = atoi(argv[2]);
 	int dest;
-	int *send_buffer = new int[size];
-	int *receive_buffer = new int[size];
+	int *buffer = new int[size];
 	double *times = new double[trials];
 
 
-	MPI_Init(NULL, NULL);
-	int world_rank, world_size;
-	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 	if (world_size % 2 != 0) {
 		printf("World size should be divisible by 2\n");
 		exit(1);
@@ -46,14 +48,15 @@ int main(int argc, char **argv) {
 	for (int i = 0; i < trials; i++) {
 		double w0 = get_wall_time();
 		if (world_rank % 2 == 0) {
-			MPI_Send(send_buffer, size, MPI_INT, dest, 0, MPI_COMM_WORLD);
-			MPI_Recv(receive_buffer, size, MPI_INT, dest, 0,
-				MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Send(buffer, size, MPI_INT, dest, 0, MPI_COMM_WORLD);
+			// MPI_Recv(receive_buffer, size, MPI_INT, dest, 0,
+				// MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		} else {
-			MPI_Recv(receive_buffer, size, MPI_INT, dest, 0,
+			MPI_Recv(buffer, size, MPI_INT, dest, 0,
 				MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			MPI_Send(send_buffer, size, MPI_INT, dest, 0, MPI_COMM_WORLD);
+			// MPI_Send(send_buffer, size, MPI_INT, dest, 0, MPI_COMM_WORLD);
 		}
+		MPI_Barrier(MPI_COMM_WORLD);
 		clock_t t1 = clock(); double w1 = get_wall_time();
 		times[i] = w1-w0;
 	}
@@ -69,7 +72,7 @@ int main(int argc, char **argv) {
 		MPI_SUM, 0, MPI_COMM_WORLD);
 
 	if (world_rank == 0) {
-		printf("Total speed: %.2fMB/s\n", tot_speed);
+		printf("Total speed: %.2fMB/s (%.2fMb/s)\n", tot_speed, 8*tot_speed);
 	}
 	MPI_Finalize();
 }
