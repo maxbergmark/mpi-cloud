@@ -33,6 +33,9 @@ int main(int argc, char **argv) {
 	int trials = atoi(argv[2]);
 	int dest;
 	int *buffer = new int[size];
+	for (int i = 0; i < size; i++) {
+		buffer[i] = rand();
+	}
 	double *times = new double[trials];
 
 
@@ -50,16 +53,13 @@ int main(int argc, char **argv) {
 		double w0 = get_wall_time();
 		if (world_rank % 2 == 0) {
 			MPI_Send(buffer, size, MPI_INT, dest, 0, MPI_COMM_WORLD);
-			// MPI_Recv(receive_buffer, size, MPI_INT, dest, 0,
-				// MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		} else {
 			MPI_Recv(buffer, size, MPI_INT, dest, 0,
 				MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			// MPI_Send(send_buffer, size, MPI_INT, dest, 0, MPI_COMM_WORLD);
 		}
-		MPI_Barrier(MPI_COMM_WORLD);
 		clock_t t1 = clock(); double w1 = get_wall_time();
 		times[i] = w1-w0;
+		MPI_Barrier(MPI_COMM_WORLD);
 	}
 	double avg_time = 0;
 	for (int i = 0; i < trials; i++) {
@@ -76,8 +76,10 @@ int main(int argc, char **argv) {
 	MPI_Reduce(&avg_speed, &tot_speed, 1, MPI_DOUBLE,
 		MPI_SUM, 0, MPI_COMM_WORLD);
 
+	MPI_Barrier(MPI_COMM_WORLD);
 	if (world_rank == 0) {
-		printf("Total speed: %.2fMB/s (%.2fMb/s)\n", tot_speed, 8*tot_speed);
+		printf("Total speed: %.2fMB/s (%.2fGb/s)\n", 
+			tot_speed, tot_speed / 128);
 	}
 	MPI_Finalize();
 }
