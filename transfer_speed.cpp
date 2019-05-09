@@ -1,6 +1,7 @@
-#include <mpi.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <mpi.h>
 #include <ctime>
 #include <cstdlib>
 #include <sys/time.h>
@@ -29,15 +30,11 @@ int main(int argc, char **argv) {
 		}
 		exit(1);
 	}
-	int size = atoi(argv[1]);
+	uint64_t size = atol(argv[1]);
 	int trials = atoi(argv[2]);
 	int dest;
 	int *buffer = new int[size];
-	for (int i = 0; i < size; i++) {
-		buffer[i] = rand();
-	}
 	double *times = new double[trials];
-
 
 	if (world_size % 2 != 0) {
 		printf("World size should be divisible by 2\n");
@@ -50,15 +47,15 @@ int main(int argc, char **argv) {
 	}
 
 	for (int i = 0; i < trials; i++) {
-		double w0 = get_wall_time();
+		double t0 = get_wall_time();
 		if (world_rank % 2 == 0) {
 			MPI_Send(buffer, size, MPI_INT, dest, 0, MPI_COMM_WORLD);
 		} else {
 			MPI_Recv(buffer, size, MPI_INT, dest, 0,
 				MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		}
-		clock_t t1 = clock(); double w1 = get_wall_time();
-		times[i] = w1-w0;
+		double t1 = get_wall_time();
+		times[i] = t1-t0;
 		MPI_Barrier(MPI_COMM_WORLD);
 	}
 	double avg_time = 0;
@@ -66,7 +63,7 @@ int main(int argc, char **argv) {
 		avg_time += times[i];
 	}
 	avg_time /= trials;
-	double avg_speed = sizeof(int) * size / avg_time / 1024 / 1024;
+	double avg_speed = (double)sizeof(int) * size / avg_time / 1024 / 1024;
 
 	char hostname[1024];
     gethostname(hostname, 1024);
