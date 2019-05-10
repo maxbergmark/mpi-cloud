@@ -51,7 +51,6 @@ void run_neighbor_test(int world_rank, int world_size, int dest, bool sending,
 		avg_speed[i] = (double)(1 << i) / times[i] * sizeof(int) / 1024 / 1024;
 	}
 
-
 	double *avg_time = new double[size];
 	MPI_Reduce(times, avg_time, size, MPI_DOUBLE,
 		MPI_SUM, 0, MPI_COMM_WORLD);
@@ -99,6 +98,14 @@ int main(int argc, char **argv) {
 		}
 		exit(1);
 	}
+
+	if (world_rank == 0) {
+		printf("\n");
+	}
+	usleep(world_rank * 1000);
+	print_hostname(world_rank);
+	MPI_Barrier(MPI_COMM_WORLD);
+	usleep(world_size * 1000);
 
 	if (world_size % 2 == 0) {
 		if (world_rank == 0) {
