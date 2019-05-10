@@ -16,6 +16,12 @@ double get_wall_time(){
 	return (double)time.tv_sec + (double)time.tv_usec * .000001;
 }
 
+void print_hostname(int world_rank) {
+	char hostname[1024];
+	gethostname(hostname, 1024);
+	printf("%s (%2d)\n", hostname, world_rank);
+}
+
 double test_transfer_speed(int *buffer, uint64_t n, int dest, bool sending) {
 	double t0 = get_wall_time();
 	if (sending) {
@@ -43,22 +49,17 @@ void run_neighbor_test(int world_rank, int world_size, int dest, bool sending,
 	for (int i = 0; i < size; i++) {
 		times[i] /= trials;
 		avg_speed[i] = (double)(1 << i) / times[i] * sizeof(int) / 1024 / 1024;
-		// printf("times: %d: %e (%f)\n", i, times[i], avg_speed[i]);
 	}
 
-	char hostname[1024];
-    gethostname(hostname, 1024);
-	// for (int i = 0; i < size; i++) {
-		// printf("%s (%2d) avg: %.2fMB/s (%8.5fs)\n", 
-			// hostname, world_rank, avg_speed[i], times[i]);
-	// }
 
 	double *avg_time = new double[size];
 	MPI_Reduce(times, avg_time, size, MPI_DOUBLE,
 		MPI_SUM, 0, MPI_COMM_WORLD);
+
 	for (int i = 0; i < size; i++) {
 		avg_time[i] /= world_size;
 	}
+
 	double *tot_speed = new double[size];
 	MPI_Reduce(avg_speed, tot_speed, size, MPI_DOUBLE,
 		MPI_SUM, 0, MPI_COMM_WORLD);
@@ -129,5 +130,8 @@ int main(int argc, char **argv) {
 			trials, size, times, buffer);
 	}
 
+	if (world_rank == 0) {
+		printf("\n");
+	}
 	MPI_Finalize();
 }
