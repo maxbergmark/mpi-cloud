@@ -26,9 +26,12 @@ double test_transfer_speed(int *buffer, uint64_t n, int dest, bool sending) {
 	double t0 = get_wall_time();
 	if (sending) {
 		MPI_Send(buffer, n, MPI_INT, dest, 0, MPI_COMM_WORLD);
+		MPI_Recv(buffer, n, MPI_INT, dest, 0,
+			MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	} else {
 		MPI_Recv(buffer, n, MPI_INT, dest, 0,
 			MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Send(buffer, n, MPI_INT, dest, 0, MPI_COMM_WORLD);
 	}
 	double t1 = get_wall_time();
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -48,7 +51,7 @@ void run_neighbor_test(int world_rank, int world_size, int dest, bool sending,
 	double *avg_speed = new double[size];
 	for (int i = 0; i < size; i++) {
 		times[i] /= trials;
-		avg_speed[i] = (double)(1 << i) / times[i] * sizeof(int) / 1024 / 1024;
+		avg_speed[i] = (double)(1 << i) / times[i] * 2 * sizeof(int) / (1 << 20);
 	}
 
 	double *avg_time = new double[size];
@@ -105,7 +108,7 @@ int main(int argc, char **argv) {
 	usleep(world_rank * 1000);
 	print_hostname(world_rank);
 	MPI_Barrier(MPI_COMM_WORLD);
-	usleep(world_size * 1000);
+	usleep(world_size * 10000);
 
 	if (world_size % 2 == 0) {
 		if (world_rank == 0) {
