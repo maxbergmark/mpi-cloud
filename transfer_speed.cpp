@@ -69,8 +69,8 @@ void run_neighbor_test(int world_rank, int world_size, int dest, bool sending,
 	MPI_Barrier(MPI_COMM_WORLD);
 	if (world_rank == 0) {
 		for (int i = 0; i < size; i++) {
-			printf("Total speed: %8.2fMB/s\t(%6.2fGb/s)\t%.8fµs\n", 
-				tot_speed[i], tot_speed[i] / 128, avg_time[i]*1e6);
+			printf("Total speed for 2^%2d: %8.2fMB/s\t(%6.2fGb/s)\t%.8fµs\n", 
+				i, tot_speed[i], tot_speed[i] / 128, avg_time[i]*1e6);
 		}
 	}
 }
